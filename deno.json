@@ -4,6 +4,7 @@
   },
   "imports": {
     "@std/fs": "jsr:@std/fs@^0.229.3",
+    "@std/ini": "jsr:@std/ini@^0.225.2",
     "@std/path": "jsr:@std/path@^0.225.2"
   }
 }
