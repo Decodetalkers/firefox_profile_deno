@@ -49,7 +49,7 @@ export interface CopyFromUserProfileOptions {
   destinationDirectory?: string;
 }
 
-let config = {
+const config = {
   // from python... Not used
   // WEBDRIVER_EXT: 'webdriver.xpi',
   // EXTENSION_NAME: 'fxdriver@googlecode.com',

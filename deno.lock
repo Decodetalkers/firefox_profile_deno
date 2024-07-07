@@ -3,9 +3,11 @@
   "packages": {
     "specifiers": {
       "jsr:@libs/xml@^5.4.10": "jsr:@libs/xml@5.4.10",
+      "jsr:@std/assert": "jsr:@std/assert@0.226.0",
       "jsr:@std/assert@^0.226.0": "jsr:@std/assert@0.226.0",
       "jsr:@std/fs@^0.229.3": "jsr:@std/fs@0.229.3",
       "jsr:@std/ini@^0.225.2": "jsr:@std/ini@0.225.2",
+      "jsr:@std/internal@^1.0.0": "jsr:@std/internal@1.0.0",
       "jsr:@std/path@1.0.0-rc.1": "jsr:@std/path@1.0.0-rc.1",
       "jsr:@std/path@^0.225.2": "jsr:@std/path@0.225.2"
     },
@@ -14,7 +16,10 @@
         "integrity": "e1a92a3da15ced9a9a915641c13d6253b01505a414f42dc88c4cc96885852db6"
       },
       "@std/assert@0.226.0": {
-        "integrity": "0dfb5f7c7723c18cec118e080fec76ce15b4c31154b15ad2bd74822603ef75b3"
+        "integrity": "0dfb5f7c7723c18cec118e080fec76ce15b4c31154b15ad2bd74822603ef75b3",
+        "dependencies": [
+          "jsr:@std/internal@^1.0.0"
+        ]
       },
       "@std/fs@0.229.3": {
         "integrity": "783bca21f24da92e04c3893c9e79653227ab016c48e96b3078377ebd5222e6eb",
@@ -24,6 +29,9 @@
       },
       "@std/ini@0.225.2": {
         "integrity": "c70f6560dacb7e333c2f868aa09aaa4117e6618cc66c60d0b4ca716c135c8e67"
+      },
+      "@std/internal@1.0.0": {
+        "integrity": "ac6a6dfebf838582c4b4f61a6907374e27e05bedb6ce276e0f1608fe84e7cd9a"
       },
       "@std/path@0.225.2": {
         "integrity": "0f2db41d36b50ef048dcb0399aac720a5348638dd3cb5bf80685bf2a745aa506",
