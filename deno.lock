@@ -2,6 +2,7 @@
   "version": "3",
   "packages": {
     "specifiers": {
+      "jsr:@libs/xml@^5.4.10": "jsr:@libs/xml@5.4.10",
       "jsr:@std/assert@^0.226.0": "jsr:@std/assert@0.226.0",
       "jsr:@std/fs@^0.229.3": "jsr:@std/fs@0.229.3",
       "jsr:@std/ini@^0.225.2": "jsr:@std/ini@0.225.2",
@@ -9,6 +10,9 @@
       "jsr:@std/path@^0.225.2": "jsr:@std/path@0.225.2"
     },
     "jsr": {
+      "@libs/xml@5.4.10": {
+        "integrity": "e1a92a3da15ced9a9a915641c13d6253b01505a414f42dc88c4cc96885852db6"
+      },
       "@std/assert@0.226.0": {
         "integrity": "0dfb5f7c7723c18cec118e080fec76ce15b4c31154b15ad2bd74822603ef75b3"
       },
@@ -35,6 +39,7 @@
   "remote": {},
   "workspace": {
     "dependencies": [
+      "jsr:@libs/xml@^5.4.10",
       "jsr:@std/fs@^0.229.3",
       "jsr:@std/ini@^0.225.2",
       "jsr:@std/path@^0.225.2"
