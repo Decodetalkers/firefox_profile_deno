@@ -135,7 +135,13 @@ function parseOptions(
   }
   return options || {};
 }
-
+interface ProfileDetail {
+  id: string | null;
+  name: string | null;
+  unpack: boolean;
+  version: number | null;
+  isNative: boolean;
+}
 export default class FirefoxProfile {
   static Finder: typeof ProfileFinder;
 
@@ -202,19 +208,73 @@ export default class FirefoxProfile {
   private createTempFolder(prefix?: string): string {
     return Deno.makeTempDirSync({ prefix: prefix || "firefox-profile" });
   }
-  private addonDetails(addonPath: string) {
-    let details = {
+  private async addonDetails(
+    addonPath: string,
+    cb?: (detail: ProfileDetail) => ProfileDetail,
+  ) {
+    let details: ProfileDetail = {
       id: null,
       name: null,
       unpack: true,
       version: null,
       isNative: false,
     };
+
+    let doc: Uint8Array;
+    try {
+      doc = await Deno.readFile(path.join(addonPath, "install.rdf"));
+    } catch (_error) {
+      try {
+        let webExtManifest = JSON.parse(
+          (await Deno.readFile(path.join(addonPath, "manifest.json")))
+            .toString(),
+        );
+        details.unpack = false;
+        webExtManifest = webExtManifest || {};
+        details.id = (
+          (webExtManifest.browser_specific_settings || {}).gecko || {}
+        ).id;
+        if (!details.id) {
+          details.id = ((webExtManifest.applications || {}).gecko || {}).id;
+        }
+        details.name = webExtManifest.name;
+        details.version = webExtManifest.version;
+        cb && cb(details);
+        return;
+      } catch (_) {
+        const manifest = await import(path.join(addonPath, "package.json"));
+
+        details.unpack = false;
+        details.isNative = true;
+        Object.keys(details).forEach(function (prop) {
+          if (manifest[prop] !== undefined) {
+            // deno-lint-ignore no-explicit-any
+            (details as any)[prop] = manifest[prop];
+          }
+        });
+
+        cb && cb(details);
+        return;
+      }
+    }
+
+    let xmldata = xml.parse(doc);
   }
-  public deleteDir(cb: () => void): void {
+  public deleteDir(cb?: () => void): void {
+    Deno.removeSignalListener("SIGQUIT", this.onExit);
+    Deno.removeSignalListener("SIGINT", this.onSigInt);
+    fs.exists(this.profileDir).then((doesExist) => {
+      if (!doesExist) {
+        cb && cb();
+        return;
+      }
+      Deno.remove(this.profileDir).then((_) => {
+        cb && cb();
+      });
+    });
   }
   public path(): string {
-    return "";
+    return this.profileDir;
   }
   private readExistingUserjs() {
     // TODO:
