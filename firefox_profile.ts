@@ -220,7 +220,7 @@ export default class FirefoxProfile {
     this.preferencesModified = true;
   }
 
-  public async updatePreference() {
+  public async updatePreferences() {
     if (!this.preferencesModified) {
       return;
     }

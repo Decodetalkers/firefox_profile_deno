@@ -7,7 +7,7 @@ log.info(profile.path());
 
 profile.setPreference("urlclassifier.updateinterval", 172800);
 
-await profile.updatePreference();
+await profile.updatePreferences();
 
 const server = Deno.serve((_req) => new Response("Hello, world"));
 
