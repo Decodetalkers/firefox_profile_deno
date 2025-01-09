@@ -1,8 +1,7 @@
-import * as xml from "@libs/xml";
-import { ProfileFinder } from "./profile_finder.ts";
-
 import * as fs from "@std/fs";
 import * as path from "@std/path";
+import * as log from "@std/log";
+
 export interface ConstructorOptions {
   profileDirectory?: string;
   destinationDirectory?: string;
@@ -109,24 +108,6 @@ const config = {
   },
 };
 
-/**
- * Regex taken from XPIProvider.jsm in the Addon Manager to validate proper
- * IDs that are able to be used:
- * https://searchfox.org/mozilla-central/rev/c8ce16e4299a3afd560320d8d094556f2b5504cd/toolkit/mozapps/extensions/internal/XPIProvider.jsm#182
- */
-function isValidAOMAddonId(s: string) {
-  return /^(\{[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}|[a-z0-9-\._]*\@[a-z0-9-\._]+)$/i
-    .test(
-      s || "",
-    );
-}
-
-export function copyFromUserProfile(
-  options: CopyFromUserProfileOptions,
-  cb: (err: Error | null, profile?: FirefoxProfile) => void,
-): void {
-}
-
 function parseOptions(
   options?: ConstructorOptions | string,
 ): ConstructorOptions {
@@ -135,134 +116,86 @@ function parseOptions(
   }
   return options || {};
 }
-interface ProfileDetail {
-  id: string | null;
-  name: string | null;
-  unpack: boolean;
-  version: number | null;
-  isNative: boolean;
-}
-export default class FirefoxProfile {
-  static Finder: typeof ProfileFinder;
 
+export type PrefercenceMap = {
+  [key: string]: string | number | boolean;
+};
+
+const decoder = new TextDecoder("utf-8");
+const encoder = new TextEncoder();
+export default class FirefoxProfile {
   private profileDir: string;
   private extensionDir: string;
   private userPrefs: string;
-  // deno-lint-ignore no-explicit-any
-  private defaultPreferences: any;
+  private defaultPreferences: PrefercenceMap;
   private deleteOnExit: boolean;
-  private deleteZippedProfile: boolean = true;
+
   private preferencesModified: boolean = false;
-  public static copy(
-    options?: ConstructorOptions | string | undefined,
-    cb?: (err: Error | null, profile?: FirefoxProfile) => void,
-  ): void {
-    const opts = parseOptions(options);
-    if (!opts.profileDirectory) {
-      cb &&
-        cb(
-          new Error("firefoxProfile: .copy() requires profileDirectory option"),
-        );
-      return;
-    }
-    const profile = new FirefoxProfile({
-      profileDirectory: opts.profileDirectory,
-      destinationDirectory: opts.destinationDirectory,
-    });
-    profile._copy(opts.profileDirectory);
-  }
-  public onExit: () => void;
-  public onSigInt: () => void;
+
   constructor(options?: ConstructorOptions | string) {
     const opts = parseOptions(options);
     const hasDestDir = opts?.destinationDirectory;
-    const profileDirPre = opts.profileDirectory;
+    const profileCopied = opts.profileDirectory;
     this.defaultPreferences = { ...config.DEFAULT_PREFERENCES };
     this.deleteOnExit = !hasDestDir;
-    if (!profileDirPre) {
+    console.log(this.deleteOnExit);
+    if (!profileCopied) {
       this.profileDir = opts.destinationDirectory || this.createTempFolder();
     } else {
+      // NOTE: copy the existed profileDir
       const tmpDir = opts.destinationDirectory ||
         this.createTempFolder("copy-");
-      // TODO:
       fs.copySync(opts.profileDirectory!, tmpDir, {});
       this.profileDir = tmpDir;
     }
     this.extensionDir = path.join(this.profileDir, "extensions");
+    log.debug(`extensionDir is ${this.extensionDir}`);
     this.userPrefs = path.join(this.profileDir, "user.js");
     if (fs.existsSync(this.userPrefs)) {
       this.readExistingUserjs();
     }
-    this.onExit = function () {
-      if (this.deleteOnExit) {
-        this.cleanOnExit();
-      }
-    };
-    this.onSigInt = () => Deno.exit(130);
-    Deno.addSignalListener("SIGQUIT", this.onExit);
-    Deno.addSignalListener("SIGINT", this.onSigInt);
+    globalThis.addEventListener("unload", () => {
+      this.onExit();
+    });
+    Deno.addSignalListener("SIGINT", () => {
+      this.onSigInt();
+    });
   }
+
+  private onSigInt() {
+    Deno.exit(0);
+  }
+
+  private onExit() {
+    if (this.deleteOnExit) {
+      this.cleanOnExit();
+    }
+  }
+
   private cleanOnExit() {
+    if (fs.existsSync(this.profileDir)) {
+      try {
+        Deno.removeSync(this.profileDir, { recursive: true });
+      } catch (e) {
+        log.warn(
+          "[firefox-profile] cannot delete profileDir on exit",
+          this.profileDir,
+          e,
+        );
+      }
+    }
   }
-  // TODO: fix me
   private createTempFolder(prefix?: string): string {
     return Deno.makeTempDirSync({ prefix: prefix || "firefox-profile" });
   }
-  private async addonDetails(
-    addonPath: string,
-    cb?: (detail: ProfileDetail) => ProfileDetail,
-  ) {
-    let details: ProfileDetail = {
-      id: null,
-      name: null,
-      unpack: true,
-      version: null,
-      isNative: false,
-    };
 
-    let doc: Uint8Array;
-    try {
-      doc = await Deno.readFile(path.join(addonPath, "install.rdf"));
-    } catch (_error) {
-      try {
-        let webExtManifest = JSON.parse(
-          (await Deno.readFile(path.join(addonPath, "manifest.json")))
-            .toString(),
-        );
-        details.unpack = false;
-        webExtManifest = webExtManifest || {};
-        details.id = (
-          (webExtManifest.browser_specific_settings || {}).gecko || {}
-        ).id;
-        if (!details.id) {
-          details.id = ((webExtManifest.applications || {}).gecko || {}).id;
-        }
-        details.name = webExtManifest.name;
-        details.version = webExtManifest.version;
-        cb && cb(details);
-        return;
-      } catch (_) {
-        const manifest = await import(path.join(addonPath, "package.json"));
-
-        details.unpack = false;
-        details.isNative = true;
-        Object.keys(details).forEach(function (prop) {
-          if (manifest[prop] !== undefined) {
-            // deno-lint-ignore no-explicit-any
-            (details as any)[prop] = manifest[prop];
-          }
-        });
-
-        cb && cb(details);
-        return;
-      }
-    }
-
-    let xmldata = xml.parse(doc);
-  }
   public deleteDir(cb?: () => void): void {
-    Deno.removeSignalListener("SIGQUIT", this.onExit);
-    Deno.removeSignalListener("SIGINT", this.onSigInt);
+    globalThis.removeEventListener("unload", () => {
+      this.onExit();
+    });
+    Deno.removeSignalListener("SIGINT", () => {
+      this.onSigInt();
+    });
     fs.exists(this.profileDir).then((doesExist) => {
       if (!doesExist) {
         cb && cb();
@@ -273,13 +206,45 @@ export default class FirefoxProfile {
       });
     });
   }
+
   public path(): string {
     return this.profileDir;
   }
-  private readExistingUserjs() {
-    // TODO:
+
+  public setPreference(key: string, value: string | number | boolean) {
+    let cleanValue = value.toString();
+    if (typeof value === "string") {
+      cleanValue = '"' + value.replace("\n", "\\n") + '"';
+    }
+    this.defaultPreferences[key] = cleanValue;
+    this.preferencesModified = true;
   }
-  private _copy(dir: string) {
-    fs.copySync(dir, this.profileDir);
+
+  public async updatePreference() {
+    if (!this.preferencesModified) {
+      return;
+    }
+    const userPrefs = this.defaultPreferences;
+    let content = "";
+    Object.keys(userPrefs).forEach(function (val) {
+      content = content + 'user_pref("' + val + '", ' + userPrefs[val] + ");\n";
+    });
+    if (content.length == 0) {
+      return;
+    }
+    const data = encoder.encode(content);
+    await Deno.writeFile(this.userPrefs, data);
+  }
+
+  private readExistingUserjs() {
+    const regExp = /user_pref\(['"](.*)["'],\s*(.*)\)/;
+    const data = Deno.readFileSync(this.userPrefs);
+    const contentLines = decoder.decode(data).split("\n");
+    for (const line of contentLines) {
+      const found = line.match(regExp);
+      if (found) {
+        this.defaultPreferences[found[1]] = found[2];
+      }
+    }
   }
 }
