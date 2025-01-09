@@ -1,5 +1,5 @@
 {
-  "name": "@nobody/firefox_profile_deno",
+  "name": "@nobody/firefox-profile-deno",
   "version": "0.1.0",
   "exports": {
     ".": "./mod.ts",
