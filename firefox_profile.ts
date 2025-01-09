@@ -138,7 +138,6 @@ export default class FirefoxProfile {
     const profileCopied = opts.profileDirectory;
     this.defaultPreferences = { ...config.DEFAULT_PREFERENCES };
     this.deleteOnExit = !hasDestDir;
-    console.log(this.deleteOnExit);
     if (!profileCopied) {
       this.profileDir = opts.destinationDirectory || this.createTempFolder();
     } else {
