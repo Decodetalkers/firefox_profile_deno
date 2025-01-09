@@ -131,6 +131,8 @@ export default class FirefoxProfile {
   private deleteOnExit: boolean;
 
   private preferencesModified: boolean = false;
+  private onSigInt: () => void;
+  private onExit: () => void;
 
   constructor(options?: ConstructorOptions | string) {
     const opts = parseOptions(options);
@@ -150,25 +152,20 @@ export default class FirefoxProfile {
     this.extensionDir = path.join(this.profileDir, "extensions");
     log.debug(`extensionDir is ${this.extensionDir}`);
     this.userPrefs = path.join(this.profileDir, "user.js");
+    this.onSigInt = () => {
+      Deno.exit(0);
+    };
+
+    this.onExit = () => {
+      if (this.deleteOnExit) {
+        this.cleanOnExit();
+      }
+    };
     if (fs.existsSync(this.userPrefs)) {
       this.readExistingUserjs();
     }
-    globalThis.addEventListener("unload", () => {
-      this.onExit();
-    });
-    Deno.addSignalListener("SIGINT", () => {
-      this.onSigInt();
-    });
-  }
-
-  private onSigInt() {
-    Deno.exit(0);
-  }
-
-  private onExit() {
-    if (this.deleteOnExit) {
-      this.cleanOnExit();
-    }
+    globalThis.addEventListener("unload", this.onExit);
+    Deno.addSignalListener("SIGINT", this.onSigInt);
   }
 
   private cleanOnExit() {
@@ -189,12 +186,8 @@ export default class FirefoxProfile {
   }
 
   public deleteDir(cb?: () => void): void {
-    globalThis.removeEventListener("unload", () => {
-      this.onExit();
-    });
-    Deno.removeSignalListener("SIGINT", () => {
-      this.onSigInt();
-    });
+    globalThis.removeEventListener("unload", this.onExit);
+    Deno.removeSignalListener("SIGINT", this.onSigInt);
     fs.exists(this.profileDir).then((doesExist) => {
       if (!doesExist) {
         cb && cb();
