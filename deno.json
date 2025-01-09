@@ -1,6 +1,6 @@
 {
   "name": "@nobody/firefox_profile_deno",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "exports": {
     ".": "./mod.ts",
     "./firefox_profile": "./firefox_profile.ts"
