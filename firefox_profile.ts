@@ -1,6 +1,7 @@
 import * as fs from "@std/fs";
 import * as path from "@std/path";
 import * as log from "@std/log";
+import { ConstDecoder, ConstEncoder } from "./common.ts";
 
 export interface ConstructorOptions {
   profileDirectory?: string;
@@ -121,8 +122,6 @@ export type PrefercenceMap = {
   [key: string]: string | number | boolean;
 };
 
-const decoder = new TextDecoder("utf-8");
-const encoder = new TextEncoder();
 export default class FirefoxProfile {
   private profileDir: string;
   private extensionDir: string;
@@ -224,14 +223,14 @@ export default class FirefoxProfile {
     if (content.length == 0) {
       return;
     }
-    const data = encoder.encode(content);
+    const data = ConstEncoder.encode(content);
     await Deno.writeFile(this.userPrefs, data);
   }
 
   private readExistingUserjs() {
     const regExp = /user_pref\(['"](.*)["'],\s*(.*)\)/;
     const data = Deno.readFileSync(this.userPrefs);
-    const contentLines = decoder.decode(data).split("\n");
+    const contentLines = ConstDecoder.decode(data).split("\n");
     for (const line of contentLines) {
       const found = line.match(regExp);
       if (found) {

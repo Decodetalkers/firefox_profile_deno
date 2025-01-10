@@ -12,7 +12,7 @@ export const defaultConfigDir = (() => {
     "mozilla/firefox",
   );
 })();
-
+import * as log from "@std/log";
 export function locateLinuxDirectory(): string {
   if (userHomeDir === undefined) {
     throw new Error("home dir cannot find");
@@ -36,7 +36,7 @@ export function locateLinuxDirectory(): string {
     throw new Error("config dir cannot find");
   }
   if (!fs.existsSync(defaultConfigDir)) {
-    console.warn(
+    log.warn(
       "detected firefox profile directory:",
       defaultConfigDir,
       "not found",
@@ -45,7 +45,7 @@ export function locateLinuxDirectory(): string {
   return defaultConfigDir;
 }
 
-export function locateUserDirectory(platform: string | undefined = undefined) {
+export function locateUserDirectory(platform?: string): string {
   const pa = platform || Deno.build.os;
   switch (pa) {
     case "darwin":
