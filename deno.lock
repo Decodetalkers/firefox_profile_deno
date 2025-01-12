@@ -12,7 +12,8 @@
     "jsr:@std/io@0.225": "0.225.0",
     "jsr:@std/log@~0.224.12": "0.224.12",
     "jsr:@std/path@1.0.0-rc.1": "1.0.0-rc.1",
-    "jsr:@std/path@~0.225.2": "0.225.2"
+    "jsr:@std/path@~0.225.2": "0.225.2",
+    "jsr:@zip-js/zip-js@^2.7.54": "2.7.54"
   },
   "jsr": {
     "@libs/xml@5.4.10": {
@@ -61,6 +62,9 @@
     },
     "@std/path@1.0.0-rc.1": {
       "integrity": "b8c00ae2f19106a6bb7cbf1ab9be52aa70de1605daeb2dbdc4f87a7cbaf10ff6"
+    },
+    "@zip-js/zip-js@2.7.54": {
+      "integrity": "a28b93b56a6cb2ed0f613355b2e9120ea9f6e9703dd6ae1bbc0088cfa3fef692"
     }
   },
   "workspace": {
@@ -69,7 +73,8 @@
       "jsr:@std/fs@~0.229.3",
       "jsr:@std/ini@~0.225.2",
       "jsr:@std/log@~0.224.12",
-      "jsr:@std/path@~0.225.2"
+      "jsr:@std/path@~0.225.2",
+      "jsr:@zip-js/zip-js@^2.7.54"
     ]
   }
 }

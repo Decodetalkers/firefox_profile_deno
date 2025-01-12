@@ -9,6 +9,10 @@ profile.setPreference("urlclassifier.updateinterval", 172800);
 
 await profile.updatePreferences();
 
+await profile.addExtension("./asserts/test.xpi", (_, details) => {
+  log.info(details);
+});
+
 const server = Deno.serve((_req) => new Response("Hello, world"));
 
 Deno.addSignalListener("SIGINT", () => {
