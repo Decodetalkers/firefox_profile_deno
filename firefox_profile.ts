@@ -408,8 +408,8 @@ export default class FirefoxProfile {
       const zipFileReader = new BlobReader(zipFileBlob);
 
       const zipReader = new ZipReader(zipFileReader);
-      const entrys: Entry[] = await zipReader.getEntries();
-      const jsonEntry: Entry | undefined = entrys.find((entry) =>
+      const entries: Entry[] = await zipReader.getEntries();
+      const jsonEntry: Entry | undefined = entries.find((entry) =>
         entry.filename == "manifest.json"
       );
       if (!jsonEntry) {
