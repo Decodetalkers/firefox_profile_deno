@@ -3,7 +3,7 @@ import { FirefoxProfile } from "./mod.ts";
 
 const profile = new FirefoxProfile();
 
-log.info(profile.path());
+log.info(profile.path);
 
 profile.setPreference("urlclassifier.updateinterval", 172800);
 

@@ -30,6 +30,7 @@ export interface ManualProxySettings {
   httpProxy?: string;
   sslProxy?: string;
   socksProxy?: string;
+  noProxy?: boolean;
 }
 
 export type ProxySettings =
@@ -51,6 +52,14 @@ export interface CopyFromUserProfileOptions {
   userProfilePath?: string;
   destinationDirectory?: string;
 }
+
+// only '1' found in proxy.js
+const ffValues = {
+  direct: 0,
+  manual: 1,
+  pac: 2,
+  system: 3,
+};
 
 const config = {
   // from python... Not used
@@ -122,7 +131,7 @@ function parseOptions(
 }
 
 export type PrefercenceMap = {
-  [key: string]: string | number | boolean;
+  [key: string]: string | number | boolean | undefined;
 };
 
 function isValidAOMAddonId(s: string) {
@@ -284,11 +293,11 @@ export default class FirefoxProfile {
     });
   }
 
-  public willDeleteOnExit(): boolean {
+  get willDeleteOnExit(): boolean {
     return this.deleteOnExit;
   }
 
-  public path(): string {
+  get path(): string {
     return this.profileDir;
   }
 
@@ -428,5 +437,87 @@ export default class FirefoxProfile {
     details.name = webExtManifest.name;
     details.version = webExtManifest.version;
     return details;
+  }
+  /**
+   * Set network proxy settings.
+   *
+   * The parameter `proxy` is a hash which structure depends on the value of mandatory `proxyType` key,
+   * which takes one of the following string values:
+   *
+   * * `direct` - direct connection (no proxy)
+   * * `system` - use operating system proxy settings
+   * * `pac` - use automatic proxy configuration set based on the value of `autoconfigUrl` key
+   * * `manual` - manual proxy settings defined separately for different protocols using values from following keys:
+   * `ftpProxy`, `httpProxy`, `sslProxy`, `socksProxy`
+   *
+   * Examples:
+   *
+   * * set automatic proxy:
+   *
+   *      profile.setProxy({
+   *          proxyType: 'pac',
+   *          autoconfigUrl: 'http://myserver/proxy.pac'
+   *      });
+   *
+   * * set manual http proxy:
+   *
+   *      profile.setProxy({
+   *          proxyType: 'manual',
+   *          httpProxy: '127.0.0.1:8080'
+   *      });
+   *
+   * * set manual http and https proxy:
+   *
+   *      profile.setProxy({
+   *          proxyType: 'manual',
+   *          httpProxy: '127.0.0.1:8080',
+   *          sslProxy: '127.0.0.1:8080'
+   *      });
+   */
+  setProxy(proxy: ProxySettings): void {
+    if (!proxy || !proxy.proxyType) {
+      throw new Error("firefoxProfile: not a valid proxy type");
+    }
+    this.setPreference("network.proxy.type", ffValues[proxy.proxyType]);
+    switch (proxy.proxyType) {
+      case "manual":
+        if (proxy.noProxy) {
+          this.setPreference("network.proxy.no_proxies_on", proxy.noProxy);
+        }
+        this.setManualProxyPreference("ftp", proxy.ftpProxy);
+        this.setManualProxyPreference("http", proxy.httpProxy);
+        this.setManualProxyPreference("ssl", proxy.sslProxy);
+        this.setManualProxyPreference("socks", proxy.socksProxy);
+        break;
+      case "pac":
+        this.setPreference("network.proxy.autoconfig_url", proxy.autoConfigUrl);
+        break;
+    }
+  }
+
+  setNativeEventsEnabled(val: boolean) {
+    this.defaultPreferences["webdriver_enable_native_events"] = val;
+  }
+
+  /**
+   * return true if native events are eanbled
+   */
+  get nativeEnventsEnabled(): boolean {
+    const enabled = this.defaultPreferences["webdriver_enable_native_events"];
+    return enabled === true || enabled === "true";
+  }
+
+  private setManualProxyPreference(key: string, setting: string | undefined) {
+    if (!setting || setting === "") {
+      return;
+    }
+    const hostDetails = setting.split(":");
+    this.setPreference("network.proxy." + key, hostDetails[0]);
+    if (hostDetails[1]) {
+      this.setPreference(
+        "network.proxy." + key + "_port",
+        parseInt(hostDetails[1], 10),
+      );
+    }
   }
 }
