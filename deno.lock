@@ -1,84 +1,50 @@
 {
   "version": "4",
   "specifiers": {
-    "jsr:@libs/xml@^5.4.10": "5.4.10",
-    "jsr:@nobody/xpi-util@0.2": "0.2.0",
-    "jsr:@std/assert@*": "0.226.0",
-    "jsr:@std/assert@0.226": "0.226.0",
-    "jsr:@std/fmt@^1.0.3": "1.0.3",
-    "jsr:@std/fs@^1.0.7": "1.0.8",
+    "jsr:@libs/xml@^6.0.4": "6.0.4",
+    "jsr:@nobody/xpi-util@~0.2.1": "0.2.1",
+    "jsr:@std/fmt@^1.0.4": "1.0.4",
     "jsr:@std/fs@^1.0.9": "1.0.9",
-    "jsr:@std/fs@~0.229.3": "0.229.3",
-    "jsr:@std/ini@~0.225.2": "0.225.2",
-    "jsr:@std/internal@1": "1.0.0",
+    "jsr:@std/ini@^1.0.0-rc.5": "1.0.0-rc.5",
     "jsr:@std/io@0.225": "0.225.0",
-    "jsr:@std/log@~0.224.12": "0.224.12",
-    "jsr:@std/path@1.0.0-rc.1": "1.0.0-rc.1",
+    "jsr:@std/log@~0.224.13": "0.224.13",
     "jsr:@std/path@^1.0.8": "1.0.8",
-    "jsr:@std/path@~0.225.2": "0.225.2",
     "jsr:@zip-js/zip-js@^2.7.54": "2.7.54"
   },
   "jsr": {
-    "@libs/xml@5.4.10": {
-      "integrity": "e1a92a3da15ced9a9a915641c13d6253b01505a414f42dc88c4cc96885852db6"
+    "@libs/xml@6.0.4": {
+      "integrity": "c896f17016dbf5f2d62496e0bd6cd7db145c05987d0e45d4dd2c87785a60f528"
     },
-    "@nobody/xpi-util@0.2.0": {
-      "integrity": "f56c3b1076a798ab909d2ac61349eb9d2cd1f1538cef982229c48eb7f614d777",
+    "@nobody/xpi-util@0.2.1": {
+      "integrity": "a1d529e45366a69407deb935fa16962d1390e651eaa16ec390df0d566b7f441f",
       "dependencies": [
-        "jsr:@std/fs@^1.0.9",
-        "jsr:@std/path@^1.0.8",
+        "jsr:@std/fs",
+        "jsr:@std/path",
         "jsr:@zip-js/zip-js"
       ]
     },
-    "@std/assert@0.226.0": {
-      "integrity": "0dfb5f7c7723c18cec118e080fec76ce15b4c31154b15ad2bd74822603ef75b3",
-      "dependencies": [
-        "jsr:@std/internal"
-      ]
-    },
-    "@std/fmt@1.0.3": {
-      "integrity": "97765c16aa32245ff4e2204ecf7d8562496a3cb8592340a80e7e554e0bb9149f"
-    },
-    "@std/fs@0.229.3": {
-      "integrity": "783bca21f24da92e04c3893c9e79653227ab016c48e96b3078377ebd5222e6eb",
-      "dependencies": [
-        "jsr:@std/path@1.0.0-rc.1"
-      ]
-    },
-    "@std/fs@1.0.8": {
-      "integrity": "161c721b6f9400b8100a851b6f4061431c538b204bb76c501d02c508995cffe0"
+    "@std/fmt@1.0.4": {
+      "integrity": "e14fe5bedee26f80877e6705a97a79c7eed599e81bb1669127ef9e8bc1e29a74"
     },
     "@std/fs@1.0.9": {
       "integrity": "3eef7e3ed3d317b29432c7dcb3b20122820dbc574263f721cb0248ad91bad890",
       "dependencies": [
-        "jsr:@std/path@^1.0.8"
+        "jsr:@std/path"
       ]
     },
-    "@std/ini@0.225.2": {
-      "integrity": "c70f6560dacb7e333c2f868aa09aaa4117e6618cc66c60d0b4ca716c135c8e67"
-    },
-    "@std/internal@1.0.0": {
-      "integrity": "ac6a6dfebf838582c4b4f61a6907374e27e05bedb6ce276e0f1608fe84e7cd9a"
+    "@std/ini@1.0.0-rc.5": {
+      "integrity": "d3cb36ceaed576f8eb1954ddb4a6c9ec82520d55745eacbcadc4ae24a09eec3e"
     },
     "@std/io@0.225.0": {
       "integrity": "c1db7c5e5a231629b32d64b9a53139445b2ca640d828c26bf23e1c55f8c079b3"
     },
-    "@std/log@0.224.12": {
-      "integrity": "d0f002f1340a11f28d482a7a9e1c904c26b8ff2c7dd4fe32175b3ece3e0b18c5",
+    "@std/log@0.224.13": {
+      "integrity": "f04d82f676c9eb4306194ca166d296d9f1456fe4b7edf2a404a0d55c94d31df7",
       "dependencies": [
         "jsr:@std/fmt",
-        "jsr:@std/fs@^1.0.7",
+        "jsr:@std/fs",
         "jsr:@std/io"
       ]
-    },
-    "@std/path@0.225.2": {
-      "integrity": "0f2db41d36b50ef048dcb0399aac720a5348638dd3cb5bf80685bf2a745aa506",
-      "dependencies": [
-        "jsr:@std/assert@0.226"
-      ]
-    },
-    "@std/path@1.0.0-rc.1": {
-      "integrity": "b8c00ae2f19106a6bb7cbf1ab9be52aa70de1605daeb2dbdc4f87a7cbaf10ff6"
     },
     "@std/path@1.0.8": {
       "integrity": "548fa456bb6a04d3c1a1e7477986b6cffbce95102d0bb447c67c4ee70e0364be"
@@ -89,13 +55,12 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@libs/xml@^5.4.10",
-      "jsr:@nobody/xpi-util@0.2",
-      "jsr:@std/fs@~0.229.3",
-      "jsr:@std/ini@~0.225.2",
-      "jsr:@std/log@~0.224.12",
-      "jsr:@std/path@~0.225.2",
-      "jsr:@zip-js/zip-js@^2.7.54"
+      "jsr:@libs/xml@^6.0.4",
+      "jsr:@nobody/xpi-util@~0.2.1",
+      "jsr:@std/fs@^1.0.9",
+      "jsr:@std/ini@^1.0.0-rc.5",
+      "jsr:@std/log@~0.224.13",
+      "jsr:@std/path@^1.0.8"
     ]
   }
 }

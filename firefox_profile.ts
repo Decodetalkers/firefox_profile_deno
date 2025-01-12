@@ -341,7 +341,7 @@ export default class FirefoxProfile {
         return;
       }
 
-      const addonDetails = addonDetailsResult.data()!.info;
+      const addonDetails = addonDetailsResult.unwrap().info;
       const addonId = getID(addonDetails);
       if (!addonId) {
         cb(new Error("FirefoxProfile: the addon id could not be found!"));

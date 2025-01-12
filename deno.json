@@ -1,6 +1,6 @@
 {
   "name": "@nobody/firefox-profile-deno",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "exports": {
     ".": "./mod.ts",
     "./firefox_profile": "./firefox_profile.ts"
@@ -10,11 +10,11 @@
   },
   "license": "MIT",
   "imports": {
-    "@libs/xml": "jsr:@libs/xml@^5.4.10",
-    "@nobody/xpi-util": "jsr:@nobody/xpi-util@^0.2.0",
-    "@std/fs": "jsr:@std/fs@^0.229.3",
-    "@std/ini": "jsr:@std/ini@^0.225.2",
-    "@std/log": "jsr:@std/log@^0.224.12",
-    "@std/path": "jsr:@std/path@^0.225.2"
+    "@libs/xml": "jsr:@libs/xml@^6.0.4",
+    "@nobody/xpi-util": "jsr:@nobody/xpi-util@^0.2.1",
+    "@std/fs": "jsr:@std/fs@^1.0.9",
+    "@std/ini": "jsr:@std/ini@^1.0.0-rc.5",
+    "@std/log": "jsr:@std/log@^0.224.13",
+    "@std/path": "jsr:@std/path@^1.0.8"
   }
 }
