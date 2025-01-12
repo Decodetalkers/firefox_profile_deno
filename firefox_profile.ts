@@ -4,6 +4,7 @@ import * as log from "@std/log";
 import { ConstDecoder, ConstEncoder } from "./common.ts";
 
 import { BlobReader, type Entry, TextWriter, ZipReader } from "@zip-js/zip-js";
+import { ProfileFinder } from "./profile_finder.ts";
 
 export interface ConstructorOptions {
   profileDirectory?: string;
@@ -191,6 +192,67 @@ export default class FirefoxProfile {
     Deno.addSignalListener("SIGINT", this.onSigInt);
   }
 
+  private copy(profileDirectory: string, cb: (err: Error | null) => void) {
+    try {
+      fs.copySync(
+        profileDirectory,
+        this.profileDir,
+      );
+    } catch (e) {
+      cb(e as Error);
+    }
+  }
+
+  static copy = function (
+    options: ConstructorOptions,
+    cb?: (err: Error | null, profile?: FirefoxProfile) => void,
+  ) {
+    const opts = parseOptions(options);
+    if (!opts.profileDirectory) {
+      cb &&
+        cb(
+          new Error("firefoxProfile: .copy() requires profileDirectory option"),
+        );
+      return;
+    }
+    const profile = new FirefoxProfile({
+      profileDirectory: opts.profileDirectory,
+      destinationDirectory: opts.destinationDirectory,
+    });
+    profile.copy(opts.profileDirectory, function () {
+      cb && cb(null, profile);
+    });
+  };
+
+  static CopyFromUserProfile(
+    opts: CopyFromUserProfileOptions,
+    cb?: (err: Error | null, profile?: FirefoxProfile) => void,
+  ) {
+    if (!opts.name) {
+      cb &&
+        cb(
+          new Error(
+            "firefoxProfile: .copyFromUserProfile() requires a name options",
+          ),
+        );
+      return;
+    }
+    const finder = new ProfileFinder(opts.userProfilePath);
+    finder.getPath(opts.name, function (err, profilePath) {
+      if (err) {
+        cb && cb(err);
+        return;
+      }
+      FirefoxProfile.copy(
+        {
+          destinationDirectory: opts.destinationDirectory,
+          profileDirectory: profilePath,
+        },
+        cb,
+      );
+    });
+  }
+
   private cleanOnExit() {
     if (fs.existsSync(this.profileDir)) {
       try {
@@ -345,7 +407,7 @@ export default class FirefoxProfile {
         throw new Error("do not contain manifest.json");
       }
       const jsonWriter = new TextWriter();
-      doc = await jsonEntry.getData(jsonWriter);
+      doc = await jsonEntry.getData!(jsonWriter);
       await zipReader.close();
     }
     const webExtManifest = JSON.parse(doc);
