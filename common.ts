@@ -1,2 +1,2 @@
-export const ConstDecoder = new TextDecoder("utf-8");
-export const ConstEncoder = new TextEncoder();
+export const CommonDecoder = new TextDecoder("utf-8");
+export const CommonEncoder = new TextEncoder();

@@ -3,7 +3,7 @@ import { locateUserDirectory } from "./envs.ts";
 import * as ini from "@std/ini";
 
 import * as path from "@std/path";
-import { ConstDecoder } from "./common.ts";
+import { CommonDecoder } from "./common.ts";
 
 export class ProfileFinder {
   public directory: string;
@@ -26,7 +26,7 @@ export class ProfileFinder {
     const result = await Deno.readFile(
       path.join(this.directory, "profiles.ini"),
     );
-    const data = ConstDecoder.decode(result);
+    const data = CommonDecoder.decode(result);
     Object.entries(ini.parse(data)).forEach(([key, value]) => {
       if (typeof key === "string" && key.match(/^Profile/)) {
         this.profiles.push(value as string);

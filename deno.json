@@ -1,6 +1,6 @@
 {
   "name": "@nobody/firefox-profile-deno",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "exports": {
     ".": "./mod.ts",
     "./firefox_profile": "./firefox_profile.ts"
@@ -15,7 +15,6 @@
     "@std/fs": "jsr:@std/fs@^0.229.3",
     "@std/ini": "jsr:@std/ini@^0.225.2",
     "@std/log": "jsr:@std/log@^0.224.12",
-    "@std/path": "jsr:@std/path@^0.225.2",
-    "@zip-js/zip-js": "jsr:@zip-js/zip-js@^2.7.54"
+    "@std/path": "jsr:@std/path@^0.225.2"
   }
 }

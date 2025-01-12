@@ -1,7 +1,7 @@
 import * as fs from "@std/fs";
 import * as path from "@std/path";
 import * as log from "@std/log";
-import { ConstDecoder, ConstEncoder } from "./common.ts";
+import { CommonDecoder, CommonEncoder } from "./common.ts";
 
 import { ProfileFinder } from "./profile_finder.ts";
 
@@ -294,14 +294,14 @@ export default class FirefoxProfile {
     if (content.length == 0) {
       return;
     }
-    const data = ConstEncoder.encode(content);
+    const data = CommonEncoder.encode(content);
     await Deno.writeFile(this.userPrefs, data);
   }
 
   private readExistingUserjs() {
     const regExp = /user_pref\(['"](.*)["'],\s*(.*)\)/;
     const data = Deno.readFileSync(this.userPrefs);
-    const contentLines = ConstDecoder.decode(data).split("\n");
+    const contentLines = CommonDecoder.decode(data).split("\n");
     for (const line of contentLines) {
       const found = line.match(regExp);
       if (found) {
@@ -335,7 +335,7 @@ export default class FirefoxProfile {
       return;
     }
     try {
-      const addonDetailsResult = await readExtInfo(extension);
+      const addonDetailsResult = await readExtInfo(extension, CommonDecoder);
       if (addonDetailsResult.is_err()) {
         cb(addonDetailsResult.err()!);
         return;
