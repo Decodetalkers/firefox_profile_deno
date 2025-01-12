@@ -3,8 +3,10 @@ import * as path from "@std/path";
 import * as log from "@std/log";
 import { ConstDecoder, ConstEncoder } from "./common.ts";
 
-import { BlobReader, type Entry, TextWriter, ZipReader } from "@zip-js/zip-js";
 import { ProfileFinder } from "./profile_finder.ts";
+
+import { type AddonInfo, getID, readExtInfo } from "@nobody/xpi-util";
+export type { AddonInfo };
 
 export interface ConstructorOptions {
   profileDirectory?: string;
@@ -38,14 +40,6 @@ export type ProxySettings =
   | SystemProxySettings
   | AutomaticProxySettings
   | ManualProxySettings;
-
-export interface AddonDetails {
-  id: string;
-  name: string;
-  version: string;
-  unpack: boolean;
-  isNative: boolean;
-}
 
 export interface CopyFromUserProfileOptions {
   name: string;
@@ -133,28 +127,6 @@ function parseOptions(
 export type PrefercenceMap = {
   [key: string]: string | number | boolean | undefined;
 };
-
-function isValidAOMAddonId(s: string) {
-  return /^(\{[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}|[a-z0-9-\._]*\@[a-z0-9-\._]+)$/i
-    .test(
-      s || "",
-    );
-}
-
-function getID(manifest: AddonDetails): string | undefined {
-  if (manifest.id) {
-    return isValidAOMAddonId(manifest.id) ? manifest.id : undefined;
-  }
-
-  // This is currently used to keep the backward compatible behavior
-  // expected on the deprecated jetpack extensions manifest file.
-  if (manifest.name && typeof manifest.name == "string") {
-    const id = `@${manifest.name}`;
-    return isValidAOMAddonId(id) ? id : undefined;
-  }
-
-  return undefined;
-}
 
 export default class FirefoxProfile {
   private profileDir: string;
@@ -340,7 +312,7 @@ export default class FirefoxProfile {
 
   addExtensions(
     extensions: string[],
-    cb: (err: Error | null, addonDetails?: AddonDetails) => void,
+    cb: (err: Error | null, addonDetails?: AddonInfo) => void,
   ): Promise<void[]> {
     const promises = extensions.map(async (extension) => {
       const normalizedExtension = path.normalize(extension);
@@ -351,7 +323,7 @@ export default class FirefoxProfile {
 
   async addExtension(
     extension: string,
-    cb: (err: Error | null, addonDetails?: AddonDetails) => void,
+    cb: (err: Error | null, addonDetails?: AddonInfo) => void,
   ): Promise<void> {
     if (!fs.existsSync(extension)) {
       cb(new Error("file does exist"));
@@ -363,7 +335,13 @@ export default class FirefoxProfile {
       return;
     }
     try {
-      const addonDetails = await this.addonDetailsGet(extension, isDir);
+      const addonDetailsResult = await readExtInfo(extension);
+      if (addonDetailsResult.is_err()) {
+        cb(addonDetailsResult.err()!);
+        return;
+      }
+
+      const addonDetails = addonDetailsResult.data()!.info;
       const addonId = getID(addonDetails);
       if (!addonId) {
         cb(new Error("FirefoxProfile: the addon id could not be found!"));
@@ -374,13 +352,11 @@ export default class FirefoxProfile {
       if (isDir) {
         addonPath = path.join(
           this.extensionDir,
-          path.SEPARATOR,
           addonId,
         );
       } else {
         addonPath = path.join(
           this.extensionDir,
-          path.SEPARATOR,
           addonXpiName,
         );
       }
@@ -393,51 +369,6 @@ export default class FirefoxProfile {
     }
   }
 
-  async addonDetailsGet(
-    addonPath: string,
-    isDir: boolean,
-  ): Promise<AddonDetails> {
-    let doc: string;
-    if (isDir) {
-      const json_path = path.join(addonPath, "manifest.json");
-      const data = Deno.readFileSync(json_path);
-      doc = ConstDecoder.decode(data);
-    } else {
-      const fileData = await Deno.readFile(addonPath);
-      const zipFileBlob: Blob = new Blob([fileData]);
-      const zipFileReader = new BlobReader(zipFileBlob);
-
-      const zipReader = new ZipReader(zipFileReader);
-      const entries: Entry[] = await zipReader.getEntries();
-      const jsonEntry: Entry | undefined = entries.find((entry) =>
-        entry.filename == "manifest.json"
-      );
-      if (!jsonEntry) {
-        throw new Error("do not contain manifest.json");
-      }
-      const jsonWriter = new TextWriter();
-      doc = await jsonEntry.getData!(jsonWriter);
-      await zipReader.close();
-    }
-    const webExtManifest = JSON.parse(doc);
-    const details = {
-      id: "",
-      name: "",
-      unpack: false,
-      version: "",
-      isNative: false,
-    };
-    details.id = (
-      (webExtManifest.browser_specific_settings || {}).gecko || {}
-    ).id;
-    if (!details.id) {
-      details.id = ((webExtManifest.applications || {}).gecko || {})
-        .id as string;
-    }
-    details.name = webExtManifest.name;
-    details.version = webExtManifest.version;
-    return details;
-  }
   /**
    * Set network proxy settings.
    *
