@@ -431,9 +431,9 @@ export default class FirefoxProfile {
   }
 
   /**
-   * return true if native events are eanbled
+   * return true if native events are enabled
    */
-  get nativeEnventsEnabled(): boolean {
+  get nativeEventsEnabled(): boolean {
     const enabled = this.defaultPreferences["webdriver_enable_native_events"];
     return enabled === true || enabled === "true";
   }
