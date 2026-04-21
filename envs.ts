@@ -12,6 +12,10 @@ export const defaultConfigDir = (() => {
     "mozilla/firefox",
   );
 })();
+
+export const defaultLocation = userHomeDir
+  ? path.join(userHomeDir, ".mozilla/firefox")
+  : undefined;
 import * as log from "@std/log";
 export function locateLinuxDirectory(): string {
   if (userHomeDir === undefined) {
@@ -31,6 +35,9 @@ export function locateLinuxDirectory(): string {
     if (fs.existsSync(dir)) {
       return dir;
     }
+  }
+  if (defaultLocation && fs.existsSync(defaultLocation)) {
+    return defaultLocation;
   }
   if (defaultConfigDir === undefined) {
     throw new Error("config dir cannot find");
